@@ -71,7 +71,7 @@ username = parser['login']['username']
 password = parser['login']['password']
 
 # Define the recipients of the email
-recipients = ['Jake', 'Jake 2']
+recipients = ['Jake 2']
 recipients = {recipient: parser['recipients'][recipient] for recipient in recipients}
 
 # Start the server and login
