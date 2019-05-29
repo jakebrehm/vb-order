@@ -14,11 +14,11 @@ client = gspread.authorize(creds)
 sheet = client.open("Village Burger").sheet1
 
 # Pull data from each column of the spreadsheet
-names = [name for name in sheet.col_values(3)[4:26] if name.lower() != 'order in']
-orders = sheet.col_values(4)[4:26]
-cooks = sheet.col_values(5)[4:26]
-notes = sheet.col_values(6)[4:26]
-payments = sheet.col_values(7)[4:26]
+names = [name for name in sheet.col_values(3)[4:24] if name.lower() != 'order in']
+orders = sheet.col_values(4)[4:24]
+cooks = sheet.col_values(5)[4:24]
+notes = sheet.col_values(6)[4:24]
+payments = sheet.col_values(7)[4:24]
 
 # Initialize information of the orders
 info = {}
@@ -71,7 +71,7 @@ username = parser['login']['username']
 password = parser['login']['password']
 
 # Define the recipients of the email
-recipients = ['Jake 2']
+recipients = ['Jake']
 recipients = {recipient: parser['recipients'][recipient] for recipient in recipients}
 
 # Start the server and login
@@ -87,3 +87,6 @@ for recipient in recipients:
 
 # Quit the server
 server.quit()
+
+# Show on the spreadsheet that order is in
+sheet.update_acell('F26', 'Submitted')
