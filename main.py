@@ -20,45 +20,62 @@ cooks = sheet.col_values(5)[4:24]
 notes = sheet.col_values(6)[4:24]
 payments = sheet.col_values(7)[4:24]
 
-# Initialize information of the orders
-info = {}
-for order in set(orders):
-	info[order] = {
-		'count': orders.count(order),
-		'cash': sum(1 for p, payment in enumerate(payments) if orders[p] == order
-					and payment == 'Cash'),
-		'credit': sum(1 for p, payment in enumerate(payments) if orders[p] == order
-					and payment == 'Credit'),
+# Create a dictionary to fill with cash orders
+cash = {}
+for i, order in enumerate(orders):
+	cook = f': {cooks[i]}' if cooks[i] else ''
+	full = order + cook
+	# Count all of the orders with the same name and cook
+	cash[full] = {
+		'count': sum(1 for p, payment in enumerate(payments) if orders[p] == order
+				     and payment == 'Cash' and cooks[i] == cooks[p]),
 		'notes': '',
-		}
-
-# Record the cook(s) for each order
-for order in set(orders):
-	info[order]['cook'] = [cook for c, cook in enumerate(cooks) if orders[c] == order]
-
-# Create a new line for each note
+	}
+# Add notes to the relevant dictionary
 for n, note in enumerate(notes):
-	if note: info[orders[n]]['notes'] += f'({names[n]}) {note}\n'
+	if note and payments[n] == 'Cash':
+		cook = f': {cooks[n]}' if cooks[n] else ''
+		cash[orders[n] + cook]['notes'] +=  f'\t({names[n]}) {note}\n'
+# Remove items with a count of zero from the dictionary
+cash = {order: {'count': details['count'], 'notes': details['notes']} for order, details in cash.items()
+		if details['count'] > 0}
+
+# Create a dictionary to fill with credit orders
+credit = {}
+for i, order in enumerate(orders):
+	cook = f': {cooks[i]}' if cooks[i] else ''
+	full = order + cook
+	# Count all of the orders with the same name and cook
+	credit[full] = {
+		'count': sum(1 for p, payment in enumerate(payments) if orders[p] == order
+					 and payment == 'Credit' and cooks[i] == cooks[p]),
+		'notes': '',
+	}
+# Add notes to the relevant dictionary
+for n, note in enumerate(notes):
+	if note and payments[n] == 'Credit':
+		cook = f': {cooks[n]}' if cooks[n] else ''
+		credit[orders[n] + cook]['notes'] +=  f'\t({names[n]}) {note}\n'
+# Remove items with a count of zero from the dictionary
+credit = {order: {'count': details['count'], 'notes': details['notes']} for order, details in credit.items()
+		if details['count'] > 0}
 
 # Create the message of the email
-message = f'There are {len(names)} people going to Village Burger today.\n'
-message += f'Of those {len(names)} people, {payments.count("Credit")} are ' \
-		   f'paying with credit and {payments.count("Cash")} are paying with ' \
-		    'cash.\n\n'
+message = f'There were {len(names)} orders entered into the spreadsheet today.\n'
+message += f'Of those {len(names)} orders, {payments.count("Credit")} will ' \
+		   f'be paid with credit and {payments.count("Cash")} will be paid ' \
+		    'with cash.\n\n'
 
-for i, order in enumerate(info.keys()):
-	# Specify order number and what the order is
-	message += f'ORDER #{i+1}:\n'
-	message += f'({info[order]["count"]}) {order}\n'
-	# Specify the cook(s) of the order(s)
-	cook_string = ''
-	for cook in set(info[order]['cook']):
-		if cook: cook_string += f'({info[order]["cook"].count(cook)}) {cook} '
-	if cook: message += cook_string + '\n'
-	# Add payment information and notes
-	message += f'({info[order]["credit"]}) Credit ({info[order]["cash"]}) Cash\n'
-	message += f'{info[order]["notes"]}'
-	message += '\n'
+# Create the message of the email
+message += 'CASH:\n'
+for i, order in enumerate(cash):
+	message += f'({cash[order]["count"]}) {order}\n'
+	if cash[order]['notes']: message += cash[order]['notes']
+message += '\n'
+message += 'CREDIT:\n'
+for i, order in enumerate(credit):
+	message += f'({credit[order]["count"]}) {order}\n'
+	if credit[order]['notes']: message += credit[order]['notes']
 
 # Create the subject of the email
 date = datetime.today().strftime('%m/%d/%Y')
@@ -71,7 +88,7 @@ username = parser['login']['username']
 password = parser['login']['password']
 
 # Define the recipients of the email
-recipients = ['Jake']
+recipients = ['Jake 2']
 recipients = {recipient: parser['recipients'][recipient] for recipient in recipients}
 
 # Start the server and login
