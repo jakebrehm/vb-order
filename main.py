@@ -7,7 +7,8 @@ from configparser import ConfigParser
 # Connect to the Google Spreadsheets client
 scope = ['https://spreadsheets.google.com/feeds',
          'https://www.googleapis.com/auth/drive']
-creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
+path = r'C:\Users\brehm\OneDrive\Python\Leisure Projects\Village Burger\credentials.json'
+creds = ServiceAccountCredentials.from_json_keyfile_name(path, scope)
 client = gspread.authorize(creds)
 
 # Specify the active worksheet
@@ -37,8 +38,8 @@ for n, note in enumerate(notes):
 		cook = f': {cooks[n]}' if cooks[n] else ''
 		cash[orders[n] + cook]['notes'] +=  f'\t({names[n]}) {note}\n'
 # Remove items with a count of zero from the dictionary
-cash = {order: {'count': details['count'], 'notes': details['notes']} for order, details in cash.items()
-		if details['count'] > 0}
+cash = {order: {'count': details['count'], 'notes': details['notes']}
+        for order, details in cash.items() if details['count'] > 0}
 
 # Create a dictionary to fill with credit orders
 credit = {}
@@ -57,8 +58,8 @@ for n, note in enumerate(notes):
 		cook = f': {cooks[n]}' if cooks[n] else ''
 		credit[orders[n] + cook]['notes'] +=  f'\t({names[n]}) {note}\n'
 # Remove items with a count of zero from the dictionary
-credit = {order: {'count': details['count'], 'notes': details['notes']} for order, details in credit.items()
-		if details['count'] > 0}
+credit = {order: {'count': details['count'], 'notes': details['notes']}
+          for order, details in credit.items() if details['count'] > 0}
 
 # Create the message of the email
 message = f'There were {len(names)} orders entered into the spreadsheet today.\n'
@@ -83,12 +84,12 @@ subject = f'Village Burger Order ({date})'
 
 # Read username and password from the config file
 parser = ConfigParser()
-parser.read('config.ini')
+parser.read(r'C:\Users\brehm\OneDrive\Python\Leisure Projects\Village Burger\config.ini')
 username = parser['login']['username']
 password = parser['login']['password']
 
 # Define the recipients of the email
-recipients = ['Jake 2']
+recipients = ['Jake']
 recipients = {recipient: parser['recipients'][recipient] for recipient in recipients}
 
 # Start the server and login
