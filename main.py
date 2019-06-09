@@ -1,13 +1,13 @@
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 import smtplib
-from datetime import datetime
+from oauth2client.service_account import ServiceAccountCredentials
+from twilio.rest import Client as tc
 from configparser import ConfigParser
 
 # Connect to the Google Spreadsheets client
 scope = ['https://spreadsheets.google.com/feeds',
          'https://www.googleapis.com/auth/drive']
-path = r'C:\Users\brehm\OneDrive\Python\Leisure Projects\Village Burger\credentials.json'
+path = 'credentials.json'
 creds = ServiceAccountCredentials.from_json_keyfile_name(path, scope)
 client = gspread.authorize(creds)
 
@@ -61,6 +61,14 @@ for n, note in enumerate(notes):
 credit = {order: {'count': details['count'], 'notes': details['notes']}
           for order, details in credit.items() if details['count'] > 0}
 
+# Sort the cash orders alphabetically
+cash_sorted = list(cash.keys())
+cash_sorted.sort()
+
+# Sort the credit orders alphabetically
+credit_sorted = list(credit.keys())
+credit_sorted.sort()
+
 # Create the message of the email
 message = f'There were {len(names)} orders entered into the spreadsheet today.\n'
 message += f'Of those {len(names)} orders, {payments.count("Credit")} will ' \
@@ -69,28 +77,28 @@ message += f'Of those {len(names)} orders, {payments.count("Credit")} will ' \
 
 # Create the message of the email
 message += 'CASH:\n'
-for i, order in enumerate(cash):
+for i, order in enumerate(cash_sorted):
 	message += f'({cash[order]["count"]}) {order}\n'
 	if cash[order]['notes']: message += cash[order]['notes']
 message += '\n'
 message += 'CREDIT:\n'
-for i, order in enumerate(credit):
+for i, order in enumerate(credit_sorted):
 	message += f'({credit[order]["count"]}) {order}\n'
 	if credit[order]['notes']: message += credit[order]['notes']
 
 # Create the subject of the email
-date = datetime.today().strftime('%m/%d/%Y')
-subject = f'Village Burger Order ({date})'
+subject = f'Village Burger Order'
 
 # Read username and password from the config file
 parser = ConfigParser()
-parser.read(r'C:\Users\brehm\OneDrive\Python\Leisure Projects\Village Burger\config.ini')
+parser.read('config.ini')
 username = parser['login']['username']
 password = parser['login']['password']
 
-# Define the recipients of the email
-recipients = ['Jake']
-recipients = {recipient: parser['recipients'][recipient] for recipient in recipients}
+# Gather the recipients of the email
+info_sheet = client.open("Village Burger").worksheet('Info')
+emails = [email for e, email in enumerate(info_sheet.col_values(3)[3:], start=4)
+	if info_sheet.acell(f'D{e}').value == 'TRUE']
 
 # Start the server and login
 server = smtplib.SMTP('smtp.gmail.com', 587)
@@ -100,11 +108,24 @@ server.login(username, password)
 
 # Format and send email to all recipients
 email = 'Subject: {}\n\n{}'.format(subject, message)
-for recipient in recipients:
-	server.sendmail(username, recipients[recipient], email.encode('utf-8'))
+for address in emails:
+	server.sendmail(username, address, email.encode('utf-8'))
 
 # Quit the server
 server.quit()
+
+# Gather the recipients of the texts
+numbers = [number for n, number in enumerate(info_sheet.col_values(5)[3:], start=4)
+	if info_sheet.acell(f'F{n}').value == 'TRUE']
+
+twilio_number = parser['twilio']['number']
+accountSID = parser['twilio']['sid']
+authToken = parser['twilio']['token']
+twilio_client = tc(accountSID, authToken)
+
+# Send text to all recipients
+for number in numbers:
+	twilio_client.messages.create(body=message, from_=twilio_number, to=number)
 
 # Show on the spreadsheet that order is in
 sheet.update_acell('F26', 'Submitted')
