@@ -98,7 +98,7 @@ password = parser['login']['password']
 # Gather the recipients of the email
 info_sheet = client.open("Village Burger").worksheet('Info')
 emails = [email for e, email in enumerate(info_sheet.col_values(3)[3:], start=4)
-	if info_sheet.acell(f'D{e}').value == 'TRUE']
+	if info_sheet.acell(f'D{e}').value == 'TRUE' and info_sheet.acell(f'C{e}').value]
 
 # Start the server and login
 server = smtplib.SMTP('smtp.gmail.com', 587)
@@ -116,7 +116,7 @@ server.quit()
 
 # Gather the recipients of the texts
 numbers = [number for n, number in enumerate(info_sheet.col_values(5)[3:], start=4)
-	if info_sheet.acell(f'F{n}').value == 'TRUE']
+	if info_sheet.acell(f'F{n}').value == 'TRUE' and info_sheet.acell(f'E{n}').value]
 
 twilio_number = parser['twilio']['number']
 accountSID = parser['twilio']['sid']
