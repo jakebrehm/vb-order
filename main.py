@@ -3,11 +3,13 @@ import smtplib
 from oauth2client.service_account import ServiceAccountCredentials
 from twilio.rest import Client as tc
 from configparser import ConfigParser
+from lemons.gui import ResourcePath
 
 # Connect to the Google Spreadsheets client
 scope = ['https://spreadsheets.google.com/feeds',
          'https://www.googleapis.com/auth/drive']
-path = 'credentials.json'
+path = r"C:\Users\brehm\OneDrive\Python\Leisure Projects\Village Burger\credentials.json"
+# path = ResourcePath('credentials.json')
 creds = ServiceAccountCredentials.from_json_keyfile_name(path, scope)
 client = gspread.authorize(creds)
 
@@ -20,6 +22,11 @@ orders = sheet.col_values(4)[4:24]
 cooks = sheet.col_values(5)[4:24]
 notes = sheet.col_values(6)[4:24]
 payments = sheet.col_values(7)[4:24]
+
+# Make sure all lists are the same length
+for info_list in [names, orders, cooks, notes, payments]:
+	while len(info_list) < len(names):
+		info_list.append('')
 
 # Create a dictionary to fill with cash orders
 cash = {}
@@ -91,7 +98,8 @@ subject = f'Village Burger Order'
 
 # Read username and password from the config file
 parser = ConfigParser()
-parser.read('config.ini')
+parser.read(r"C:\Users\brehm\OneDrive\Python\Leisure Projects\Village Burger\config.ini")
+# parser.read(ResourcePath('config.ini'))
 username = parser['login']['username']
 password = parser['login']['password']
 
