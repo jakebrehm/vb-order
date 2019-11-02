@@ -10,11 +10,27 @@ Previously, those that wanted to go would enter their order into a shared spread
 
 Because of this, I decided to write a script that would do this automatically and then email a summary of all of the orders (including notes) to whoever's going to call it in that week. An example of the summary email is shown below.
 
-<p align="center">
-  <img src="https://github.com/jakebrehm/vb-order/blob/master/img/summary.png" alt="Summary example"/>
-</p>
+```
+From a total of 10 order(s), 7 will be paid with credit, 2 will be paid with cash, and 1 did not specify a payment method.
 
-It's a simple script, but it just showcases how useful programming languages can be.
+CREDIT:
+(2) BOW: MW
+	[Jake] Test
+	[Austin] Hold the spit
+(1) BOW w/ Dead Egg: MW
+(1) BOW: MR
+(2) Turkey Club
+(1) Villy Steak and Cheese Sub
+
+CASH:
+(2) BOW: MR
+	[Mary Kate] Another one
+
+UNSPECIFIED:
+(1) Spitfire: MR
+```
+
+It's a relatively simple script, but it just showcases how useful programming languages can be.
 
 # Authors
 - **Jake Brehm** - *Initial Work* - [Email](mailto:mail@jakebrehm.com) | [Github](http://github.com/jakebrehm) | [LinkedIn](http://linkedin.com/in/jacobbrehm)
