@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-Creates a summary of Village Burger orders for ease or ordering.
+Creates a summary of Village Burger orders for ease of ordering.
 '''
 
 import smtplib
@@ -90,7 +90,10 @@ message = (
 	f'{unspecified_orders} did not specify a payment method.\n\n'
 )
 # Create sections for each payment method
-methods = ['Credit', 'Cash', 'Unspecified']
+methods = []
+if credit_orders: methods.append('Credit')
+if cash_orders: methods.append('Cash')
+if unspecified_orders: methods.append('Unspecified')
 for m, method in enumerate(methods):
 	# Add a title for the payment method
 	message += f'{method.upper()}:\n'
